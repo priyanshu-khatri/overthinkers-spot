@@ -1,4 +1,11 @@
-import { sql } from '@vercel/postgres';
+import pg from 'pg';
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 
 const CORS = {
@@ -36,7 +43,7 @@ export default async function handler(req) {
       query += ` ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i++}`;
       params.push(limit, offset);
 
-      const { rows } = await sql.query(query, params);
+      const { rows } = await pool.query(query, params);
       return new Response(JSON.stringify(rows), {
         status: 200,
         headers: { ...CORS, 'Content-Type': 'application/json' }
@@ -58,10 +65,13 @@ export default async function handler(req) {
       if (content.length > 1000)
         return new Response(JSON.stringify({ error: 'Message too long (max 1000 characters)' }), { status: 400, headers: CORS });
 
-      const { rows } = await sql`
-        INSERT INTO messages (emotion, recipient, content, section)
-        VALUES (${emotion}, ${recipient}, ${content}, ${section})
-        RETURNING *`;
+      const { rows } = await pool.query(
+        `INSERT INTO messages
+        (emotion, recipient, content, section)
+        VALUES ($1,$2,$3,$4)
+        RETURNING *`,
+  [emotion, recipient, content, section]
+);
 
       return new Response(JSON.stringify(rows[0]), {
         status: 201,

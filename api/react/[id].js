@@ -1,4 +1,11 @@
-import { sql } from '@vercel/postgres';
+import pg from 'pg';
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 
 const CORS = {
@@ -25,7 +32,7 @@ export default async function handler(req) {
       return new Response(JSON.stringify({ error: 'Invalid reaction' }), { status: 400, headers: CORS });
 
     const col = `react_${reaction}`;
-    const { rows } = await sql.query(
+    const { rows } = await pool.query(
       `UPDATE messages SET ${col} = ${col} + 1 WHERE id = $1 AND approved = true RETURNING *`,
       [msgId]
     );

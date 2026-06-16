@@ -1,4 +1,11 @@
-import { sql } from '@vercel/postgres';
+import pg from 'pg';
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 
 const CORS = {
@@ -12,9 +19,18 @@ export default async function handler(req) {
 
   try {
     const [totalRes, emotionRes] = await Promise.all([
-      sql`SELECT COUNT(*)::int AS total FROM messages WHERE approved = true`,
-      sql`SELECT emotion, COUNT(*)::int AS count FROM messages WHERE approved = true GROUP BY emotion`
-    ]);
+      pool.query(
+        `SELECT COUNT(*)::int AS total
+        FROM messages
+        WHERE approved = true`
+  ),
+      pool.query(
+        `SELECT emotion, COUNT(*)::int AS count
+         FROM messages
+         WHERE approved = true
+         GROUP BY emotion`
+  )
+]);
 
     const byEmotion = {};
     emotionRes.rows.forEach(r => { byEmotion[r.emotion] = r.count; });
