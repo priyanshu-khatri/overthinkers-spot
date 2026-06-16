@@ -2,76 +2,37 @@ import pg from 'pg';
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type,x-admin-password'
-};
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export default async function handler(req, res) {
-  Object.entries(CORS).forEach(([key, value]) => {
-    res.setHeader(key, value);
-  });
+  const password = req.headers['x-admin-password'];
 
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({
+      error: 'Unauthorized'
+    });
   }
 
   try {
-    const password = req.headers['x-admin-password'];
 
-    if (!process.env.ADMIN_PASSWORD) {
-      return res.status(500).json({
-        error: 'ADMIN_PASSWORD environment variable not configured'
-      });
-    }
-
-    if (password !== process.env.ADMIN_PASSWORD) {
-      return res.status(401).json({
-        error: 'Unauthorized'
-      });
-    }
-
-    // =========================
     // ADD MESSAGE
-    // =========================
     if (req.method === 'POST') {
-      const body =
-        typeof req.body === 'string'
-          ? JSON.parse(req.body)
-          : req.body;
 
       const {
         emotion,
         recipient,
         content,
-        section = 'general'
-      } = body;
-
-      if (!emotion || !content) {
-        return res.status(400).json({
-          error: 'emotion and content are required'
-        });
-      }
+        section
+      } = req.body;
 
       const { rows } = await pool.query(
-        `
-        INSERT INTO messages
-        (
-          emotion,
-          recipient,
-          content,
-          section,
-          approved
-        )
+        `INSERT INTO messages
+        (emotion, recipient, content, section, approved)
         VALUES ($1,$2,$3,$4,true)
-        RETURNING *
-        `,
+        RETURNING *`,
         [
           emotion,
           recipient || null,
@@ -80,44 +41,35 @@ export default async function handler(req, res) {
         ]
       );
 
-      return res.status(201).json({
-        success: true,
-        message: rows[0]
-      });
+      return res.status(201).json(rows[0]);
     }
 
-    // =========================
     // DELETE MESSAGE
-    // =========================
     if (req.method === 'DELETE') {
-      const body =
-        typeof req.body === 'string'
-          ? JSON.parse(req.body)
-          : req.body;
 
-      const { id } = body;
+      const { id } = req.body;
 
-      if (!id) {
-        return res.status(400).json({
-          error: 'Message ID required'
-        });
-      }
-
-      const result = await pool.query(
-        `DELETE FROM messages WHERE id = $1 RETURNING id`,
+      await pool.query(
+        'DELETE FROM messages WHERE id = $1',
         [id]
       );
 
-      if (result.rowCount === 0) {
-        return res.status(404).json({
-          error: 'Message not found'
-        });
-      }
-
       return res.status(200).json({
-        success: true,
-        deletedId: id
+        success: true
       });
+    }
+
+    // LIST RECENT MESSAGES
+    if (req.method === 'GET') {
+
+      const { rows } = await pool.query(
+        `SELECT *
+         FROM messages
+         ORDER BY created_at DESC
+         LIMIT 50`
+      );
+
+      return res.status(200).json(rows);
     }
 
     return res.status(405).json({
@@ -125,11 +77,11 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
+
     console.error(err);
 
     return res.status(500).json({
-      error: 'Server error',
-      details: err.message
+      error: err.message
     });
   }
 }
