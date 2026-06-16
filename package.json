@@ -1,0 +1,13 @@
+{
+  "name": "overthinkers-spot",
+  "version": "1.0.0",
+  "description": "Anonymous emotional expression platform",
+  "private": true,
+  "dependencies": {
+    "@vercel/postgres": "^0.10.0",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Overthinker's Spot — A Place for the Thoughts You Never Shared</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+/* ═══ TOKENS ═══ */
+:root {
+  --ease: cubic-bezier(.4,0,.2,1);
+  --nav-h: 62px;
+  --bg:#0d0d14; --bg2:#13131e; --bg3:#1a1a28;
+  --surface:#1e1e30; --surface2:#252538;
+  --border:#2e2e48;
+  --text:#e8e6f0; --text2:#a09bbf; --text3:#6b6690;
+  --accent:#9b7fe8; --accent2:#c9b8ff; --accent3:#6a4fd4;
+  --teal:#5ec4d0; --rose:#e87f9b; --amber:#e8c47f; --green:#7fe8a8;
+  --card-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+[data-theme="light"] {
+  --bg:#f7f5ff; --bg2:#eeeaf9; --bg3:#e6e1f5;
+  --surface:#fff; --surface2:#f0ecff;
+  --border:#d4cef0;
+  --text:#1a1830; --text2:#4a4570; --text3:#8880aa;
+  --accent:#6a4fd4; --accent2:#4a30b4; --accent3:#9b7fe8;
+  --teal:#2a8a94; --rose:#c44068; --amber:#b07820; --green:#2a9050;
+  --card-shadow:0 4px 24px rgba(100,80,200,.08);
+}
+
+/* ═══ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .35s var(--ease),color .35s var(--ease);overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ═══ NAV ═══ */
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:var(--nav-h);
+  background:rgba(13,13,20,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:background .35s var(--ease);
+}
+[data-theme="light"] nav{background:rgba(247,245,255,.92)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--accent2);cursor:pointer;user-select:none;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:.15rem;list-style:none}
+.nav-links a{display:block;padding:.4rem .75rem;font-size:.8rem;font-weight:500;color:var(--text2);text-decoration:none;border-radius:8px;cursor:pointer;transition:color .2s,background .2s;white-space:nowrap}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.theme-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:background .2s,transform .2s;color:var(--text2)}
+.theme-btn:hover{background:var(--surface2);transform:rotate(20deg)}
+.nav-cta{padding:.4rem 1rem;border-radius:20px;background:var(--accent3);color:#fff;border:none;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s}
+.nav-cta:hover{background:var(--accent);transform:translateY(-1px)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{width:22px;height:2px;background:var(--text2);border-radius:2px;transition:.25s;display:block}
+
+/* mobile drawer */
+.mobile-drawer{
+  display:none;position:fixed;inset:0;z-index:190;
+  background:var(--bg);padding:calc(var(--nav-h) + 1rem) 1.5rem 2rem;
+  flex-direction:column;gap:.4rem;
+}
+.mobile-drawer.open{display:flex;animation:fadeDown .25s var(--ease)}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.mobile-drawer a{padding:.9rem 1rem;border-radius:10px;font-size:1rem;font-weight:500;color:var(--text2);text-decoration:none;cursor:pointer;transition:background .2s,color .2s;border:1px solid transparent}
+.mobile-drawer a:hover{background:var(--surface);color:var(--text);border-color:var(--border)}
+
+/* ═══ SECTIONS — all visible, stacked ═══ */
+section[id]{scroll-margin-top:var(--nav-h)}
+
+/* ─── HERO ─── */
+#section-home{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:5rem 1.5rem;position:relative;overflow:hidden;
+}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(155,127,232,.13) 0%,transparent 70%);pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
+.orb1{width:320px;height:320px;top:15%;left:12%;background:var(--accent3);opacity:.5;animation:drift 9s ease-in-out infinite alternate}
+.orb2{width:240px;height:240px;bottom:18%;right:14%;background:var(--rose);opacity:.28;animation:drift 12s ease-in-out infinite alternate-reverse}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,22px) scale(1.08)}}
+.hero-eyebrow{font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);margin-bottom:1.2rem;position:relative;z-index:1}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,7vw,5rem);font-weight:500;line-height:1.1;color:var(--text);margin-bottom:1rem;position:relative;z-index:1}
+.hero-title em{font-style:italic;color:var(--accent2)}
+.hero-sub{max-width:480px;font-size:1.05rem;color:var(--text2);line-height:1.7;margin-bottom:2.5rem;position:relative;z-index:1}
+.hero-btns{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.btn-primary{padding:.72rem 2rem;border-radius:32px;background:var(--accent);color:#fff;border:none;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(155,127,232,.35)}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(155,127,232,.45)}
+.btn-ghost{padding:.7rem 2rem;border-radius:32px;background:transparent;color:var(--text);border:1.5px solid var(--border);font-size:.9rem;font-weight:500;cursor:pointer;transition:border-color .2s,background .2s,transform .15s}
+.btn-ghost:hover{border-color:var(--accent);background:var(--surface);transform:translateY(-2px)}
+.hero-stats{position:relative;z-index:1;margin-top:4rem;display:flex;gap:3rem;flex-wrap:wrap;justify-content:center}
+.stat-item{text-align:center}
+.stat-n{font-family:'Playfair Display',serif;font-size:2rem;font-weight:500;color:var(--accent2);display:block}
+.stat-l{font-size:.75rem;color:var(--text3);margin-top:.2rem;letter-spacing:.06em;text-transform:uppercase}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:var(--text3);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.4rem;z-index:1}
+.scroll-hint-arrow{width:20px;height:20px;border-right:2px solid var(--text3);border-bottom:2px solid var(--text3);transform:rotate(45deg);animation:bounce .8s ease-in-out infinite alternate}
+@keyframes bounce{from{transform:rotate(45deg) translate(-2px,-2px)}to{transform:rotate(45deg) translate(2px,2px)}}
+
+/* ─── COMMON SECTION CHROME ─── */
+.section-wrap{max-width:1100px;margin:0 auto;padding:5rem 1.5rem}
+.section-wrap.narrow{max-width:680px}
+.section-header{text-align:center;margin-bottom:3rem}
+.eyebrow{font-size:.73rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.7rem}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:500;line-height:1.2;color:var(--text)}
+.section-sub{margin-top:.6rem;color:var(--text2);font-size:.95rem;line-height:1.6}
+
+/* divider */
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:0 2rem}
+
+/* ─── WRITE ─── */
+#section-write{background:var(--bg2)}
+.form-group{margin-bottom:1.5rem}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;letter-spacing:.03em}
+label .req{color:var(--rose)}
+.form-hint{font-size:.74rem;color:var(--text3);margin-top:.3rem}
+select,input[type="text"],textarea{width:100%;padding:.82rem 1rem;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:.94rem;transition:border-color .2s,box-shadow .2s;outline:none;appearance:none}
+select:focus,input[type="text"]:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,127,232,.15)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6690' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
+textarea{resize:vertical;min-height:150px;line-height:1.7}
+.char-count{text-align:right;font-size:.72rem;color:var(--text3);margin-top:.3rem}
+.char-count.warn{color:var(--amber)}.char-count.over{color:var(--rose)}
+.section-toggle{display:flex;gap:.6rem;flex-wrap:wrap}
+.stoggle-btn{padding:.5rem 1rem;border-radius:24px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:.81rem;font-weight:500;cursor:pointer;transition:all .2s var(--ease)}
+.stoggle-btn.active{border-color:var(--accent);background:rgba(155,127,232,.12);color:var(--accent2)}
+.stoggle-btn:hover:not(.active){border-color:var(--text3);color:var(--text)}
+.privacy-note{display:flex;gap:.7rem;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1.5rem;font-size:.81rem;color:var(--text3);line-height:1.55}
+.submit-btn{width:100%;padding:1rem;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(155,127,232,.3)}
+.submit-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ─── CARDS GRID ─── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem}
+.message-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:transform .2s var(--ease),box-shadow .2s,border-color .2s;position:relative;overflow:hidden}
+.message-card::before{content:'"';position:absolute;top:.4rem;right:1rem;font-family:'Playfair Display',serif;font-size:4.5rem;line-height:1;color:var(--surface2);pointer-events:none}
+.message-card:hover{transform:translateY(-4px);box-shadow:var(--card-shadow);border-color:var(--accent3)}
+.card-emotion{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:.28rem .7rem;border-radius:20px;margin-bottom:.85rem}
+.card-to{font-size:.8rem;color:var(--text3);margin-bottom:.55rem;font-style:italic}
+.card-content{font-family:'Lora',serif;font-size:.95rem;line-height:1.75;color:var(--text2);margin-bottom:1.1rem;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.card-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem}
+.card-date{font-size:.7rem;color:var(--text3)}
+.reactions-row{display:flex;gap:.35rem;flex-wrap:wrap}
+.react-btn{display:flex;align-items:center;gap:.28rem;padding:.25rem .6rem;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:.7rem;cursor:pointer;transition:all .18s var(--ease)}
+.react-btn:hover{border-color:var(--accent);background:var(--surface2);color:var(--text);transform:scale(1.06)}
+.react-btn.reacted{border-color:var(--accent3);background:rgba(155,127,232,.12);color:var(--accent2)}
+.react-count{font-weight:600}
+/* emotion colours */
+.em-Anxiety,.em-Heartbreak{background:rgba(232,127,155,.1);color:var(--rose);border:1px solid rgba(232,127,155,.22)}
+.em-Loneliness{background:rgba(94,196,208,.09);color:var(--teal);border:1px solid rgba(94,196,208,.22)}
+.em-Hope,.em-Gratitude{background:rgba(127,232,168,.09);color:var(--green);border:1px solid rgba(127,232,168,.22)}
+.em-Stress{background:rgba(232,196,127,.09);color:var(--amber);border:1px solid rgba(232,196,127,.22)}
+.em-Self-Doubt{background:rgba(155,127,232,.1);color:var(--accent2);border:1px solid rgba(155,127,232,.22)}
+.em-Other{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* ─── READ ─── */
+#section-read{background:var(--bg)}
+.filters-bar{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:2rem}
+.fchip{padding:.38rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s var(--ease)}
+.fchip.active{border-color:var(--accent);background:rgba(155,127,232,.12);color:var(--accent2)}
+.fchip:hover:not(.active){border-color:var(--text3);color:var(--text)}
+.load-more{display:block;margin:2.5rem auto 0;padding:.75rem 2.5rem;border-radius:32px;background:var(--surface);border:1.5px solid var(--border);color:var(--text2);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s var(--ease)}
+.load-more:hover{border-color:var(--accent);color:var(--text)}
+
+/* ─── MIDNIGHT ─── */
+#section-midnight{
+  background:#06060f;
+  position:relative;overflow:hidden;
+}
+#section-midnight .section-wrap{position:relative;z-index:2}
+.midnight-title-wrap{text-align:center;margin-bottom:3.5rem}
+.midnight-clock{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:#4a4070;margin-bottom:.9rem}
+.midnight-h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:400;font-style:italic;color:#c8b4ff;margin-bottom:.6rem}
+.midnight-sub{color:#6a5a8a;font-size:.95rem}
+#section-midnight .message-card{background:rgba(255,255,255,.03);border-color:rgba(200,180,255,.08)}
+#section-midnight .message-card:hover{border-color:rgba(200,180,255,.28);background:rgba(255,255,255,.05)}
+#section-midnight .card-content{color:#8a7aaa}
+#section-midnight .react-btn{background:rgba(255,255,255,.04);border-color:rgba(200,180,255,.1)}
+#section-midnight .react-btn:hover{background:rgba(155,127,232,.12);border-color:rgba(155,127,232,.3)}
+.stars-bg{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+/* ─── HOPE ─── */
+#section-hope{background:var(--bg2)}
+.hope-banner{background:linear-gradient(135deg,rgba(127,232,168,.09),rgba(94,196,208,.06));border:1px solid rgba(127,232,168,.18);border-radius:16px;padding:1.6rem 2rem;margin-bottom:2.5rem;text-align:center}
+.hope-banner blockquote{font-family:'Lora',serif;font-size:1.08rem;color:var(--text);font-style:italic;line-height:1.7}
+.hope-banner cite{font-size:.78rem;color:var(--text3);font-style:normal;display:block;margin-top:.55rem}
+#section-hope .message-card{border-color:rgba(127,232,168,.12)}
+#section-hope .message-card:hover{border-color:var(--green)}
+
+/* ─── ABOUT ─── */
+#section-about{background:var(--bg)}
+.about-lead{font-family:'Lora',serif;font-size:1.08rem;color:var(--text2);line-height:1.75;margin-bottom:2.5rem;font-style:italic}
+.about-block{margin-bottom:2.2rem}
+.about-block h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:500;color:var(--accent2);margin-bottom:.75rem}
+.about-block p,.about-block li{color:var(--text2);line-height:1.75;margin-bottom:.5rem}
+.about-block ul{padding-left:1.3rem}
+.disclaimer-box{background:rgba(232,196,127,.07);border:1px solid rgba(232,196,127,.2);border-radius:12px;padding:1.1rem 1.3rem;font-size:.86rem;color:var(--amber);line-height:1.6}
+
+/* ─── FOOTER ─── */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;color:var(--text3);font-size:.8rem}
+.footer-links{display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.1rem}
+.footer-links a{color:var(--text3);text-decoration:none;cursor:pointer;transition:color .2s}
+.footer-links a:hover{color:var(--accent2)}
+.footer-social{display:flex;gap:.8rem;justify-content:center;margin-bottom:1.1rem}
+.social-btn{width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;transition:all .2s;color:var(--text2);text-decoration:none}
+.social-btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent2)}
+
+/* ─── LOADING / EMPTY ─── */
+.loading-state,.empty-state{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-icon{font-size:2.2rem;margin-bottom:.8rem}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green);border-radius:12px;padding:.9rem 1.5rem;color:var(--green);font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:500;display:none;white-space:nowrap;animation:slideUp .3s var(--ease)}
+.toast.err{border-color:var(--rose);color:var(--rose)}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ─── MODAL ─── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1.5rem}
+.modal-overlay.open{display:flex;animation:fadeIn .25s var(--ease)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.2rem;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:.9rem}
+.modal p{color:var(--text2);line-height:1.65;margin-bottom:.8rem;font-size:.93rem}
+.modal-close{width:100%;padding:.75rem;border-radius:10px;background:var(--accent);color:#fff;border:none;font-size:.93rem;font-weight:600;cursor:pointer;margin-top:.3rem;transition:background .2s}
+.modal-close:hover{background:var(--accent2)}
+
+@media(max-width:768px){
+  nav{padding:0 1.1rem}
+  .nav-links,.nav-cta{display:none}
+  .hamburger{display:flex}
+  .cards-grid{grid-template-columns:1fr}
+  .hero-stats{gap:1.75rem}
+  .section-wrap{padding:3.5rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- STARS for midnight section -->
+<canvas id="starsCanvas" class="stars-bg" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity .6s"></canvas>
+
+<!-- ═══ NAV ═══ -->
+<nav id="mainNav">
+  <div class="nav-logo" onclick="goTo('home')">✦ Overthinker's Spot</div>
+  <ul class="nav-links">
+    <li><a id="nl-home"     onclick="goTo('home')">Home</a></li>
+    <li><a id="nl-write"    onclick="goTo('write')">✍ Write</a></li>
+    <li><a id="nl-read"     onclick="goTo('read')">📚 Read</a></li>
+    <li><a id="nl-midnight" onclick="goTo('midnight')">🌙 Midnight</a></li>
+    <li><a id="nl-hope"     onclick="goTo('hope')">🌱 Hope Wall</a></li>
+    <li><a id="nl-about"    onclick="goTo('about')">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <button class="nav-cta" onclick="goTo('write')">Write a message</button>
+    <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <a onclick="goTo('home');closeDrawer()">🏠 Home</a>
+  <a onclick="goTo('write');closeDrawer()">✍ Write a Message</a>
+  <a onclick="goTo('read');closeDrawer()">📚 Read Messages</a>
+  <a onclick="goTo('midnight');closeDrawer()">🌙 Midnight Thoughts</a>
+  <a onclick="goTo('hope');closeDrawer()">🌱 Hope Wall</a>
+  <a onclick="goTo('about');closeDrawer()">ℹ About</a>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 1 — HOME
+═══════════════════════════════════════ -->
+<section id="section-home">
+  <div class="hero-bg"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <p class="hero-eyebrow">Anonymous · Safe · Free</p>
+  <h1 class="hero-title">A place for thoughts<br><em>you never shared</em></h1>
+  <p class="hero-sub">No accounts. No judgement. Just honest words from real people navigating the quiet battles nobody talks about.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="goTo('write')">Write a message</button>
+    <button class="btn-ghost"   onclick="goTo('read')">Read messages</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><span class="stat-n" id="statTotal">—</span><div class="stat-l">Messages shared</div></div>
+    <div class="stat-item"><span class="stat-n">8</span><div class="stat-l">Emotions explored</div></div>
+    <div class="stat-item"><span class="stat-n">∞</span><div class="stat-l">You are not alone</div></div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-hint-arrow"></div></div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 2 — WRITE
+═══════════════════════════════════════ -->
+<section id="section-write">
+  <div class="section-wrap narrow">
+    <div class="section-header">
+      <p class="eyebrow">Speak anonymously</p>
+      <h2 class="section-title">Leave a thought</h2>
+      <p class="section-sub">No one will know it's you. Your words might be exactly what someone else needed to read.</p>
+    </div>
+
+    <div class="privacy-note">
+      <span>🔒</span>
+      <span>Completely anonymous — no account, no email, no IP logging. Your message is just words in a jar.</span>
+    </div>
+
+    <div class="form-group">
+      <label>Where does this belong? <span class="req">*</span></label>
+      <div class="section-toggle" id="sectionToggle">
+        <button class="stoggle-btn active" data-sec="general"  onclick="pickSection(this)">💬 General (Read section)</button>
+        <button class="stoggle-btn"        data-sec="midnight" onclick="pickSection(this)">🌙 Midnight Thoughts</button>
+        <button class="stoggle-btn"        data-sec="hope"     onclick="pickSection(this)">🌱 Hope Wall</button>
+      </div>
+      <p class="form-hint">Choose where your message will appear. Each section has its own feed.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="emotionSel">What are you feeling? <span class="req">*</span></label>
+      <select id="emotionSel">
+        <option value="">— Choose an emotion —</option>
+        <option>Anxiety</option><option>Loneliness</option><option>Hope</option>
+        <option>Heartbreak</option><option>Stress</option><option>Gratitude</option>
+        <option>Self-Doubt</option><option>Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="recipientInp">To… <span style="color:var(--text3);font-weight:400">(optional)</span></label>
+      <input type="text" id="recipientInp" placeholder="a name, a feeling, the universe…" maxlength="60"/>
+    </div>
+
+    <div class="form-group">
+      <label for="contentArea">Your message <span class="req">*</span></label>
+      <textarea id="contentArea" placeholder="Say what you've been carrying around…" maxlength="1000" oninput="updateChar()"></textarea>
+      <div class="char-count" id="charCount">0 / 1000</div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitMsg()">Share anonymously →</button>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 3 — READ (general only)
+═══════════════════════════════════════ -->
+<section id="section-read">
+  <div class="section-wrap">
+    <div class="section-header">
+      <p class="eyebrow">Community voices</p>
+      <h2 class="section-title">All messages</h2>
+      <p class="section-sub">Thoughts left by strangers. You might find your own words here.</p>
+    </div>
+    <div class="filters-bar" id="readFilters">
+      <button class="fchip active" data-em="All"       onclick="filterEmotion(this)">All</button>
+      <button class="fchip" data-em="Anxiety"          onclick="filterEmotion(this)">Anxiety</button>
+      <button class="fchip" data-em="Loneliness"       onclick="filterEmotion(this)">Loneliness</button>
+      <button class="fchip" data-em="Hope"             onclick="filterEmotion(this)">Hope</button>
+      <button class="fchip" data-em="Heartbreak"       onclick="filterEmotion(this)">Heartbreak</button>
+      <button class="fchip" data-em="Stress"           onclick="filterEmotion(this)">Stress</button>
+      <button class="fchip" data-em="Gratitude"        onclick="filterEmotion(this)">Gratitude</button>
+      <button class="fchip" data-em="Self-Doubt"       onclick="filterEmotion(this)">Self-Doubt</button>
+      <button class="fchip" data-em="Other"            onclick="filterEmotion(this)">Other</button>
+    </div>
+    <div class="cards-grid" id="readCards"><div class="loading-state"><div class="spinner"></div>Loading…</div></div>
+    <button class="load-more" id="readMore" onclick="loadMore()" style="display:none">Load more</button>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 4 — MIDNIGHT THOUGHTS
+═══════════════════════════════════════ -->
+<section id="section-midnight">
+  <div class="section-wrap">
+    <div class="midnight-title-wrap">
+      <p class="midnight-clock" id="midClock"></p>
+      <h2 class="midnight-h1">🌙 Midnight Thoughts</h2>
+      <p class="midnight-sub">The things we only dare to think when everything goes quiet.</p>
+    </div>
+    <div class="cards-grid" id="midnightCards"><div class="loading-state"><div class="spinner"></div>Loading…</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 5 — HOPE WALL
+═══════════════════════════════════════ -->
+<section id="section-hope">
+  <div class="section-wrap">
+    <div class="section-header">
+      <p class="eyebrow">Recovery · Victories · Gratitude</p>
+      <h2 class="section-title" style="color:var(--green)">🌱 Hope Wall</h2>
+      <p class="section-sub">Small victories. Recovery stories. Messages that remind us what's worth holding on for.</p>
+    </div>
+    <div class="hope-banner">
+      <blockquote>"You don't have to be fully healed to be worthy of kindness — especially your own."</blockquote>
+      <cite>— Someone who made it through</cite>
+    </div>
+    <div class="cards-grid" id="hopeCards"><div class="loading-state"><div class="spinner"></div>Loading…</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 6 — ABOUT
+═══════════════════════════════════════ -->
+<section id="section-about">
+  <div class="section-wrap narrow">
+    <div class="section-header">
+      <p class="eyebrow">Our mission</p>
+      <h2 class="section-title">About Overthinker's Spot</h2>
+    </div>
+    <p class="about-lead">"A safe and anonymous place for people carrying invisible battles. It exists to remind everyone that they are not alone."</p>
+
+    <div class="about-block">
+      <h3>What this is</h3>
+      <p>Overthinker's Spot is a quiet corner of the internet for the thoughts that never quite make it out loud. The 3am spirals. The things you almost texted. The feelings you shelved because there was no good time to bring them up.</p>
+      <p>You write anonymously. Others read, relate, and react. That's it. No algorithms rewarding outrage, no comments, no accounts.</p>
+    </div>
+
+    <div class="about-block">
+      <h3>Three spaces, one purpose</h3>
+      <ul>
+        <li><strong>Read</strong> — General thoughts, everyday emotions, anything on your mind.</li>
+        <li><strong>Midnight Thoughts</strong> — Deep late-night reflections, overthinking, loneliness.</li>
+        <li><strong>Hope Wall</strong> — Recovery stories, gratitude, small victories and encouragement.</li>
+      </ul>
+    </div>
+
+    <div class="about-block">
+      <h3>Privacy & Anonymity</h3>
+      <ul>
+        <li>No accounts required — ever.</li>
+        <li>No email addresses collected.</li>
+        <li>Messages contain no identifying information.</li>
+        <li>We do not sell or share any data.</li>
+      </ul>
+    </div>
+
+    <div class="disclaimer-box">
+      ⚠️ <strong>Mental health disclaimer:</strong> Overthinker's Spot is a creative expression platform, not a mental health service. It is not a substitute for professional support. If you're in crisis, please reach out to a licensed professional or a crisis helpline in your country.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-links">
+    <a onclick="goTo('home')">Home</a>
+    <a onclick="goTo('write')">Write</a>
+    <a onclick="goTo('read')">Read</a>
+    <a onclick="goTo('midnight')">Midnight</a>
+    <a onclick="goTo('hope')">Hope Wall</a>
+    <a onclick="goTo('about')">About</a>
+  </div>
+  <div class="footer-social">
+    <a class="social-btn" title="Twitter/X">𝕏</a>
+    <a class="social-btn" title="Instagram">◎</a>
+    <a class="social-btn" title="Tumblr">⊕</a>
+  </div>
+  <p>© 2026 Overthinker's Spot &nbsp;·&nbsp; Made with quiet intention &nbsp;·&nbsp; All messages are anonymous</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <p id="modalBody"></p>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ═══════════════════════════════════════════════════
+   CONFIG — swap API_BASE for your Vercel URL in prod
+   e.g. 'https://your-project.vercel.app'
+   Leave '' to use same-origin (works after deploy)
+═══════════════════════════════════════════════════ */
+var API_BASE = '';  // '' = same origin on Vercel
+
+/* ─── localStorage fallback DB (works offline / local file) ─── */
+var USE_LOCAL = false; // set true for fully offline mode
+
+var LOCAL_KEY   = 'ots_messages';
+var REACTED_KEY = 'ots_reacted';
+
+var SEED = [
+  {id:'s1',emotion:'Loneliness',recipient:'You',       content:'I keep replaying conversations in my head, wondering if I said the right things. It\'s 2am and I can\'t stop thinking about all the ways I might have pushed people away.',                      section:'midnight',react_relate:14,react_support:8, react_strong:11,react_notalone:19,created_at:ago(2)},
+  {id:'s2',emotion:'Hope',      recipient:null,        content:'Six months ago I couldn\'t get out of bed. Today I made breakfast, went for a walk, and called my mom. Small steps are still steps forward.',                                                     section:'hope',   react_relate:22,react_support:15,react_strong:30,react_notalone:18,created_at:ago(3)},
+  {id:'s3',emotion:'Anxiety',   recipient:'Past Me',   content:'You survived every bad day so far. 100% success rate. Stop forgetting that.',                                                                                                                    section:'general',react_relate:9, react_support:7, react_strong:12,react_notalone:14,created_at:ago(1)},
+  {id:'s4',emotion:'Heartbreak',recipient:'Him',       content:'I still check your Instagram even though we haven\'t spoken in two years. I don\'t miss you anymore, I just miss who I was when I was with you.',                                                section:'midnight',react_relate:31,react_support:12,react_strong:8, react_notalone:25,created_at:ago(5)},
+  {id:'s5',emotion:'Gratitude', recipient:'My therapist',content:'You told me feelings aren\'t facts. I think about that every single day now. Thank you for giving me language for the chaos in my head.',                                                      section:'hope',   react_relate:18,react_support:20,react_strong:14,react_notalone:16,created_at:ago(4)},
+  {id:'s6',emotion:'Self-Doubt',recipient:null,        content:'I got the promotion. Three years of thinking I wasn\'t good enough, and I got it. I\'m still waiting to feel like I deserve it.',                                                               section:'hope',   react_relate:26,react_support:19,react_strong:22,react_notalone:28,created_at:ago(6)},
+  {id:'s7',emotion:'Stress',    recipient:'Anyone',    content:'Burnout is real and it crept up so slowly I didn\'t notice until I was crying in my car before work every single morning.',                                                                      section:'midnight',react_relate:37,react_support:29,react_strong:21,react_notalone:41,created_at:ago(7)},
+  {id:'s8',emotion:'Loneliness',recipient:null,        content:'I have a full life on paper. Friends, a job, hobbies. And yet some nights it feels like I\'m screaming into a void and no one can hear me.',                                                    section:'general',react_relate:24,react_support:17,react_strong:13,react_notalone:29,created_at:ago(8)},
+  {id:'s9',emotion:'Hope',      recipient:'Future me', content:'Today I finally asked for help. It was the hardest sentence I have ever said out loud. But I said it. And the world didn\'t end.',                                                              section:'hope',   react_relate:44,react_support:38,react_strong:51,react_notalone:47,created_at:ago(9)},
+  {id:'s10',emotion:'Anxiety',  recipient:null,        content:'My brain treats every unanswered text like an emergency. Every silence like abandonment. I\'m trying to learn the difference between a feeling and a fact.',                                     section:'midnight',react_relate:33,react_support:21,react_strong:18,react_notalone:36,created_at:ago(10)}
+];
+function ago(days){ return new Date(Date.now()-days*86400000).toISOString(); }
+function uid(){ return 'loc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+
+var LocalDB = {
+  all: function(){
+    try{ var r=localStorage.getItem(LOCAL_KEY); return r?JSON.parse(r):null; }catch(e){return null;}
+  },
+  init: function(){
+    if(!this.all()){ try{localStorage.setItem(LOCAL_KEY,JSON.stringify(SEED));}catch(e){} }
+  },
+  save: function(msgs){ try{localStorage.setItem(LOCAL_KEY,JSON.stringify(msgs));}catch(e){} },
+  query: function(opts){
+    var msgs=this.all()||SEED.slice();
+    if(opts.section) msgs=msgs.filter(function(m){return m.section===opts.section;});
+    if(opts.emotion && opts.emotion!=='All') msgs=msgs.filter(function(m){return m.emotion===opts.emotion;});
+    msgs.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
+    var off=opts.offset||0, lim=opts.limit||20;
+    return msgs.slice(off,off+lim);
+  },
+  add: function(msg){
+    var msgs=this.all()||[];
+    msgs.unshift(msg);
+    this.save(msgs);
+    return msg;
+  },
+  react: function(id,reaction){
+    var msgs=this.all()||[];
+    var m=msgs.find(function(x){return x.id===id;});
+    if(!m) return null;
+    m['react_'+reaction]=(m['react_'+reaction]||0)+1;
+    this.save(msgs);
+    return m;
+  },
+  stats: function(){
+    var msgs=this.all()||SEED;
+    var be={};
+    msgs.forEach(function(m){be[m.emotion]=(be[m.emotion]||0)+1;});
+    return {total:msgs.length,by_emotion:be};
+  }
+};
+
+/* ── auto-detect: if no API_BASE and not on http(s), use local ── */
+if(!API_BASE && !window.location.protocol.startsWith('http')){
+  USE_LOCAL = true;
+}
+
+/* ═══ API LAYER ═══ */
+async function api(path, opts){
+  if(USE_LOCAL) return null; // handled by callers
+  try{
+    var res = await fetch(API_BASE+path, opts);
+    if(!res.ok){ var e=await res.json().catch(()=>({})); throw new Error(e.error||'Error '+res.status); }
+    return await res.json();
+  }catch(e){
+    // fallback to local on network error
+    USE_LOCAL = true;
+    LocalDB.init();
+    return null;
+  }
+}
+
+/* ═══ STATE ═══ */
+var readEmotion = 'All';
+var readOffset  = 0;
+var PAGE        = 12;
+var reacted     = {};
+try{ reacted=JSON.parse(localStorage.getItem(REACTED_KEY)||'{}'); }catch(e){}
+var chosenSection = 'general';
+
+/* ═══ THEME ═══ */
+var theme = 'dark';
+try{ theme=localStorage.getItem('ots_theme')||'dark'; }catch(e){}
+document.documentElement.setAttribute('data-theme',theme);
+
+window.toggleTheme = function(){
+  var next = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  try{localStorage.setItem('ots_theme',next);}catch(e){}
+  document.getElementById('themeBtn').textContent = next==='dark'?'🌙':'☀️';
+};
+
+/* ═══ SCROLL NAV ═══ */
+window.goTo = function(id){
+  var el = document.getElementById('section-'+id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+};
+
+/* active nav highlight on scroll */
+var sections = ['home','write','read','midnight','hope','about'];
+var observer = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      var id = e.target.id.replace('section-','');
+      sections.forEach(function(s){
+        var el=document.getElementById('nl-'+s);
+        if(el) el.classList.toggle('active',s===id);
+      });
+      // stars visibility
+      document.getElementById('starsCanvas').style.opacity = id==='midnight'?'1':'0';
+    }
+  });
+},{threshold:0.3});
+sections.forEach(function(s){
+  var el=document.getElementById('section-'+s);
+  if(el) observer.observe(el);
+});
+
+/* ═══ MOBILE DRAWER ═══ */
+window.toggleDrawer = function(){ document.getElementById('mobileDrawer').classList.toggle('open'); };
+window.closeDrawer  = function(){ document.getElementById('mobileDrawer').classList.remove('open'); };
+
+/* ═══ EMOJI MAP ═══ */
+var EMOJIS={Anxiety:'😰',Loneliness:'🌧️',Hope:'✨',Heartbreak:'💔',Stress:'😮‍💨',Gratitude:'🙏',Other:'💭'};
+EMOJIS['Self-Doubt']='🌀';
+function emojiFor(e){ return EMOJIS[e]||'💭'; }
+function fmtDate(iso){
+  var d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ═══ CARD RENDERER ═══ */
+var RDEFS=[
+  {key:'relate',  emoji:'❤️', label:'I Relate'},
+  {key:'support', emoji:'🤗', label:'Support'},
+  {key:'strong',  emoji:'🌱', label:'Stay Strong'},
+  {key:'notalone',emoji:'🫂', label:'Not Alone'}
+];
+
+function renderCard(msg){
+  var div=document.createElement('div');
+  div.className='message-card';
+  div.id='card-'+msg.id;
+  var to=msg.recipient?'<p class="card-to">To '+esc(msg.recipient)+'</p>':'';
+  var reacting=reacted[msg.id];
+  var btns=RDEFS.map(function(r){
+    var cnt=msg['react_'+r.key]||0;
+    var active=reacting===r.key;
+    return '<button class="react-btn'+(active?' reacted':'')+'" data-mid="'+esc(msg.id)+'" data-rk="'+r.key+'" title="'+r.label+'">'+r.emoji+' <span class="react-count">'+cnt+'</span></button>';
+  }).join('');
+  div.innerHTML='<span class="card-emotion em-'+esc(msg.emotion)+'">'+emojiFor(msg.emotion)+' '+esc(msg.emotion)+'</span>'+to+'<p class="card-content">'+esc(msg.content)+'</p><div class="card-footer"><span class="card-date">'+fmtDate(msg.created_at)+'</span><div class="reactions-row">'+btns+'</div></div>';
+  div.querySelectorAll('.react-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){ doReact(btn.dataset.mid,btn.dataset.rk); });
+  });
+  return div;
+}
+
+function showCards(containerId, msgs, append){
+  var el=document.getElementById(containerId);
+  if(!el) return;
+  if(!append) el.innerHTML='';
+  if(!msgs.length && !append){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">💭</div><p>Nothing here yet. <span style="color:var(--accent2);cursor:pointer;text-decoration:underline" onclick="goTo(\'write\')">Be the first.</span></p></div>';
+    return;
+  }
+  msgs.forEach(function(m){ el.appendChild(renderCard(m)); });
+}
+
+/* ═══ LOAD FUNCTIONS ═══ */
+async function loadStats(){
+  var s;
+  if(USE_LOCAL){ s=LocalDB.stats(); }
+  else{ s=await api('/api/stats'); }
+  if(s){ var el=document.getElementById('statTotal'); if(el) el.textContent=s.total; }
+}
+
+async function loadSection(section, containerId){
+  var el=document.getElementById(containerId);
+  if(el) el.innerHTML='<div class="loading-state"><div class="spinner"></div>Loading…</div>';
+  var msgs;
+  if(USE_LOCAL){ msgs=LocalDB.query({section:section,limit:20}); }
+  else{ msgs=await api('/api/messages?section='+section+'&limit=20'); }
+  showCards(containerId, msgs||[], false);
+}
+
+async function loadRead(reset){
+  var el=document.getElementById('readCards');
+  var btn=document.getElementById('readMore');
+  if(reset){ if(el) el.innerHTML='<div class="loading-state"><div class="spinner"></div>Loading…</div>'; readOffset=0; }
+  var msgs;
+  var emParam=readEmotion!=='All'?'&emotion='+encodeURIComponent(readEmotion):'';
+  if(USE_LOCAL){ msgs=LocalDB.query({section:'general',emotion:readEmotion,limit:PAGE,offset:readOffset}); }
+  else{ msgs=await api('/api/messages?section=general&limit='+PAGE+'&offset='+readOffset+emParam); }
+  if(reset && el) el.innerHTML='';
+  showCards('readCards', msgs||[], !reset);
+  if(!msgs||!msgs.length){ if(btn) btn.style.display='none'; }
+  else{ readOffset+=msgs.length; if(btn) btn.style.display=msgs.length<PAGE?'none':'block'; }
+}
+
+/* ═══ WRITE ═══ */
+window.pickSection = function(btn){
+  document.querySelectorAll('.stoggle-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  chosenSection=btn.dataset.sec;
+};
+
+window.updateChar = function(){
+  var v=document.getElementById('contentArea').value.length;
+  var el=document.getElementById('charCount');
+  el.textContent=v+' / 1000';
+  el.className='char-count'+(v>950?' warn':'')+(v>1000?' over':'');
+};
+
+window.submitMsg = async function(){
+  var emotion  =document.getElementById('emotionSel').value;
+  var recipient=document.getElementById('recipientInp').value.trim();
+  var content  =document.getElementById('contentArea').value.trim();
+  if(!emotion)          { showModal('Missing emotion','Please choose how you are feeling.'); return; }
+  if(content.length<10) { showModal('Too short','Your message needs at least 10 characters.'); return; }
+  if(content.length>1000){ showModal('Too long','Max 1000 characters please.'); return; }
+
+  var btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Sharing…';
+
+  var result;
+  if(USE_LOCAL){
+    result=LocalDB.add({id:uid(),emotion:emotion,recipient:recipient||null,content:content,section:chosenSection,created_at:new Date().toISOString(),react_relate:0,react_support:0,react_strong:0,react_notalone:0});
+  } else {
+    result=await api('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({emotion:emotion,recipient:recipient||null,content:content,section:chosenSection})});
+    if(!result){ showModal('Error','Could not save your message. Please try again.'); btn.disabled=false; btn.textContent='Share anonymously →'; return; }
+  }
+
+  btn.disabled=false; btn.textContent='Share anonymously →';
+  document.getElementById('emotionSel').value='';
+  document.getElementById('recipientInp').value='';
+  document.getElementById('contentArea').value='';
+  window.updateChar();
+  showToast('✓ Your thought has been heard. Thank you.');
+  // refresh the relevant section
+  if(chosenSection==='general') loadRead(true);
+  if(chosenSection==='midnight') loadSection('midnight','midnightCards');
+  if(chosenSection==='hope')    loadSection('hope','hopeCards');
+  loadStats();
+};
+
+/* ═══ FILTERS ═══ */
+window.filterEmotion = function(btn){
+  document.querySelectorAll('#readFilters .fchip').forEach(function(c){c.classList.remove('active');});
+  btn.classList.add('active');
+  readEmotion=btn.dataset.em;
+  loadRead(true);
+};
+window.loadMore = function(){ loadRead(false); };
+
+/* ═══ REACTIONS ═══ */
+async function doReact(msgId, reaction){
+  if(reacted[msgId]){ showModal('Already reacted','You have already sent love to this message.'); return; }
+  var result;
+  if(USE_LOCAL){ result=LocalDB.react(msgId,reaction); }
+  else{ result=await api('/api/react/'+msgId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reaction:reaction})}); }
+  if(!result) return;
+  reacted[msgId]=reaction;
+  try{localStorage.setItem(REACTED_KEY,JSON.stringify(reacted));}catch(e){}
+  var card=document.getElementById('card-'+msgId);
+  if(!card) return;
+  card.querySelectorAll('.react-btn').forEach(function(btn){
+    var k=btn.dataset.rk;
+    btn.classList.toggle('reacted',k===reaction);
+    var c=btn.querySelector('.react-count');
+    if(c) c.textContent=result['react_'+k]||0;
+  });
+}
+
+function tickClock(){
+  var el=document.getElementById('midClock');
+  if(!el) return;
+  var now=new Date();
+  el.textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
+/* ═══ STARS ═══ */
+function initStars(){
+  var canvas=document.getElementById('starsCanvas');
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var stars=[];
+  function resize(){
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+    stars=[];
+    for(var i=0;i<130;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.1+.3,o:Math.random(),s:Math.random()*.005+.002});
+  }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(function(s){s.o+=s.s;if(s.o>1||s.o<0)s.s*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(200,180,255,'+(s.o*.55)+')';ctx.fill();});
+    requestAnimationFrame(draw);
+  }
+  resize(); window.addEventListener('resize',resize); draw();
+}
+
+/* ═══ TOAST ═══ */
+var toastTimer;
+function showToast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast'+(type==='err'?' err':'');
+  el.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.style.display='none';},4000);
+}
+
+/* ═══ MODAL ═══ */
+window.showModal = function(title,body){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').textContent=body;
+  document.getElementById('modalOverlay').classList.add('open');
+};
+window.closeModal = function(){ document.getElementById('modalOverlay').classList.remove('open'); };
+
+/* ═══ INIT ═══ */
+document.addEventListener('DOMContentLoaded',function(){
+  // theme icon
+  document.getElementById('themeBtn').textContent=theme==='dark'?'🌙':'☀️';
+  // modal backdrop
+  document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this) window.closeModal();});
+  // stars
+  initStars();
+  // clock
+  tickClock(); setInterval(tickClock,1000);
+  // init local db if needed
+  if(USE_LOCAL) LocalDB.init();
+  // load all sections
+  loadStats();
+  loadRead(true);
+  loadSection('midnight','midnightCards');
+  loadSection('hope','hopeCards');
+});
+
+})();
+</script>
+</body>
+</html>
