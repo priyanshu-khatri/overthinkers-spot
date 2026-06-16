@@ -762,21 +762,52 @@ window.filterEmotion = function(btn){
 window.loadMore = function(){ loadRead(false); };
 
 /* ═══ REACTIONS ═══ */
-async function doReact(msgId, reaction){
-  if(reacted[msgId]){ showModal('Already reacted','You have already sent love to this message.'); return; }
-  var result;
-  if(USE_LOCAL){ result=LocalDB.react(msgId,reaction); }
-  else{ result=await api('/api/react/'+msgId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reaction:reaction})}); }
-  if(!result) return;
-  reacted[msgId]=reaction;
-  try{localStorage.setItem(REACTED_KEY,JSON.stringify(reacted));}catch(e){}
-  var card=document.getElementById('card-'+msgId);
-  if(!card) return;
-  card.querySelectorAll('.react-btn').forEach(function(btn){
-    var k=btn.dataset.rk;
-    btn.classList.toggle('reacted',k===reaction);
-    var c=btn.querySelector('.react-count');
-    if(c) c.textContent=result['react_'+k]||0;
+async function doReact(msgId, reaction) {
+  if (reacted[msgId]) {
+    showModal(
+      'Already reacted',
+      'You have already sent love to this message.'
+    );
+    return;
+  }
+
+  let result;
+
+  if (USE_LOCAL) {
+    result = LocalDB.react(msgId, reaction);
+  } else {
+    result = await api('/api/react', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: msgId,
+        reaction: reaction
+      })
+    });
+  }
+
+  if (!result) return;
+
+  reacted[msgId] = reaction;
+
+  try {
+    localStorage.setItem(REACTED_KEY, JSON.stringify(reacted));
+  } catch (e) {}
+
+  const card = document.getElementById('card-' + msgId);
+  if (!card) return;
+
+  card.querySelectorAll('.react-btn').forEach(function (btn) {
+    const k = btn.dataset.rk;
+
+    btn.classList.toggle('reacted', k === reaction);
+
+    const c = btn.querySelector('.react-count');
+    if (c) {
+      c.textContent = result['react_' + k] || 0;
+    }
   });
 }
 
