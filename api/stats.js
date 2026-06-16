@@ -1,8 +1,5 @@
 import { sql } from '@vercel/postgres';
 
-export const config = {
-  runtime: 'nodejs'
-};
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
