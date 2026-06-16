@@ -7,47 +7,71 @@ const pool = new pg.Pool({
   }
 });
 
-
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-const VALID_REACTIONS = ['relate','support','strong','notalone'];
+const VALID_REACTIONS = ['relate', 'support', 'strong', 'notalone'];
 
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== 'POST')   return new Response('Method not allowed', { status: 405, headers: CORS });
+export default async function handler(req, res) {
+  // CORS
+  Object.entries(CORS).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      error: 'Method not allowed'
+    });
+  }
 
   try {
-    const url      = new URL(req.url);
-    const parts    = url.pathname.split('/');
-    // /api/react/[id]
-    const msgId    = parts[parts.length - 1];
-    const body     = await req.json();
-    const reaction = body.reaction;
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const parts = url.pathname.split('/');
+    const msgId = parts[parts.length - 1];
 
-    if (!VALID_REACTIONS.includes(reaction))
-      return new Response(JSON.stringify({ error: 'Invalid reaction' }), { status: 400, headers: CORS });
+    const body = typeof req.body === 'string'
+      ? JSON.parse(req.body)
+      : req.body;
+
+    const reaction = body?.reaction;
+
+    if (!VALID_REACTIONS.includes(reaction)) {
+      return res.status(400).json({
+        error: 'Invalid reaction'
+      });
+    }
 
     const col = `react_${reaction}`;
+
     const { rows } = await pool.query(
-      `UPDATE messages SET ${col} = ${col} + 1 WHERE id = $1 AND approved = true RETURNING *`,
+      `UPDATE messages
+       SET ${col} = ${col} + 1
+       WHERE id = $1 AND approved = true
+       RETURNING *`,
       [msgId]
     );
 
-    if (!rows.length)
-      return new Response(JSON.stringify({ error: 'Message not found' }), { status: 404, headers: CORS });
+    if (!rows.length) {
+      return res.status(404).json({
+        error: 'Message not found'
+      });
+    }
 
-    return new Response(JSON.stringify(rows[0]), {
-      status: 200,
-      headers: { ...CORS, 'Content-Type': 'application/json' }
-    });
+    return res.status(200).json(rows[0]);
+
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: 'Server error' }), {
-      status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }
+
+    return res.status(500).json({
+      error: 'Server error',
+      details: err.message
     });
   }
 }

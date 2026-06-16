@@ -7,84 +7,151 @@ const pool = new pg.Pool({
   }
 });
 
-
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-const EMOTIONS = ['Anxiety','Loneliness','Hope','Heartbreak','Stress','Gratitude','Self-Doubt','Other'];
-const SECTIONS = ['general','midnight','hope'];
+const EMOTIONS = [
+  'Anxiety',
+  'Loneliness',
+  'Hope',
+  'Heartbreak',
+  'Stress',
+  'Gratitude',
+  'Self-Doubt',
+  'Other'
+];
 
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+const SECTIONS = ['general', 'midnight', 'hope'];
+
+export default async function handler(req, res) {
+  Object.entries(CORS).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
 
   try {
-    // ── GET /api/messages ──
+    // GET
     if (req.method === 'GET') {
-      const url    = new URL(req.url);
-      const emotion  = url.searchParams.get('emotion');
-      const section  = url.searchParams.get('section');
-      const limit    = Math.min(parseInt(url.searchParams.get('limit')  || '20'), 100);
-      const offset   = parseInt(url.searchParams.get('offset') || '0');
+      const url = new URL(req.url, `http://${req.headers.host}`);
 
-      let query = `SELECT * FROM messages WHERE approved = true`;
+      const emotion = url.searchParams.get('emotion');
+      const section = url.searchParams.get('section');
+
+      const limit = Math.min(
+        parseInt(url.searchParams.get('limit') || '20'),
+        100
+      );
+
+      const offset = parseInt(
+        url.searchParams.get('offset') || '0'
+      );
+
+      let query = `
+        SELECT *
+        FROM messages
+        WHERE approved = true
+      `;
+
       const params = [];
       let i = 1;
-      if (emotion && emotion !== 'All' && EMOTIONS.includes(emotion)) {
+
+      if (
+        emotion &&
+        emotion !== 'All' &&
+        EMOTIONS.includes(emotion)
+      ) {
         query += ` AND emotion = $${i++}`;
         params.push(emotion);
       }
-      if (section && SECTIONS.includes(section)) {
+
+      if (
+        section &&
+        SECTIONS.includes(section)
+      ) {
         query += ` AND section = $${i++}`;
         params.push(section);
       }
-      query += ` ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i++}`;
+
+      query += `
+        ORDER BY created_at DESC
+        LIMIT $${i++}
+        OFFSET $${i++}
+      `;
+
       params.push(limit, offset);
 
       const { rows } = await pool.query(query, params);
-      return new Response(JSON.stringify(rows), {
-        status: 200,
-        headers: { ...CORS, 'Content-Type': 'application/json' }
-      });
+
+      return res.status(200).json(rows);
     }
 
-    // ── POST /api/messages ──
+    // POST
     if (req.method === 'POST') {
-      const body      = await req.json();
-      const emotion   = (body.emotion   || '').trim();
-      const recipient = (body.recipient || '').trim().slice(0, 60) || null;
-      const content   = (body.content   || '').trim();
-      const section   = SECTIONS.includes(body.section) ? body.section : 'general';
+      const body =
+        typeof req.body === 'string'
+          ? JSON.parse(req.body)
+          : req.body;
 
-      if (!EMOTIONS.includes(emotion))
-        return new Response(JSON.stringify({ error: 'Invalid emotion' }), { status: 400, headers: CORS });
-      if (content.length < 10)
-        return new Response(JSON.stringify({ error: 'Message too short (min 10 characters)' }), { status: 400, headers: CORS });
-      if (content.length > 1000)
-        return new Response(JSON.stringify({ error: 'Message too long (max 1000 characters)' }), { status: 400, headers: CORS });
+      const emotion = (body.emotion || '').trim();
+      const recipient =
+        (body.recipient || '')
+          .trim()
+          .slice(0, 60) || null;
+
+      const content = (body.content || '').trim();
+
+      const section =
+        SECTIONS.includes(body.section)
+          ? body.section
+          : 'general';
+
+      if (!EMOTIONS.includes(emotion)) {
+        return res.status(400).json({
+          error: 'Invalid emotion'
+        });
+      }
+
+      if (content.length < 10) {
+        return res.status(400).json({
+          error: 'Message too short (min 10 characters)'
+        });
+      }
+
+      if (content.length > 1000) {
+        return res.status(400).json({
+          error: 'Message too long (max 1000 characters)'
+        });
+      }
 
       const { rows } = await pool.query(
-        `INSERT INTO messages
+        `
+        INSERT INTO messages
         (emotion, recipient, content, section)
-        VALUES ($1,$2,$3,$4)
-        RETURNING *`,
-  [emotion, recipient, content, section]
-);
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+        `,
+        [emotion, recipient, content, section]
+      );
 
-      return new Response(JSON.stringify(rows[0]), {
-        status: 201,
-        headers: { ...CORS, 'Content-Type': 'application/json' }
-      });
+      return res.status(201).json(rows[0]);
     }
 
-    return new Response('Method not allowed', { status: 405, headers: CORS });
+    return res.status(405).json({
+      error: 'Method not allowed'
+    });
 
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: 'Server error' }), {
-      status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }
+
+    return res.status(500).json({
+      error: 'Server error',
+      details: err.message
     });
   }
 }
