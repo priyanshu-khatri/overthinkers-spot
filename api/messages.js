@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { logIP } from './ipLogger';
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -139,6 +140,8 @@ export default async function handler(req, res) {
         [emotion, recipient, content, section]
       );
 
+      await logIP(pool, rows[0].id, req);
+      
       return res.status(201).json(rows[0]);
     }
 
